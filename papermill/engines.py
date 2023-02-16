@@ -109,11 +109,18 @@ class NotebookExecutionManager(object):
         self.max_autosave_pct = 25
         self.last_save_time = self.now()  # Not exactly true, but simplifies testing logic
         self.pbar = None
-        if progress_bar:
+        if progress_bar is True:
             # lazy import due to implict slow ipython import
             from tqdm.auto import tqdm
 
             self.pbar = tqdm(total=len(self.nb.cells), unit="cell", desc="Executing")
+        elif progress_bar is False:
+            pass  # no-op
+        else:
+            from tqdm.std import tqdm as std_tqdm
+            if isinstance(progress_bar, std_tqdm):
+                self.pbar = progress_bar
+                self.pbar.reset(total=len(self.nb.cells))
 
     def now(self):
         """Helper to return current UTC time"""
